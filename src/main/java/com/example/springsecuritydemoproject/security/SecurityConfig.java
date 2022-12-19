@@ -1,16 +1,20 @@
 package com.example.springsecuritydemoproject.security;
 
 import com.example.springsecuritydemoproject.security.jwt.JwtAuthFilter;
+import com.example.springsecuritydemoproject.security.jwt.JwtAuthFilter2;
 import com.example.springsecuritydemoproject.security.roles.ApplicationUserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,7 +29,7 @@ import static com.example.springsecuritydemoproject.security.roles.ApplicationUs
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter2 jwtAuthFilter;
 
     /**
      * Security config.

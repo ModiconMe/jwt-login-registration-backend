@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
                 .authorities(userEntity.getRole().getGrantedAuthorities())
                 .build();
 
-        return UserMapper.mapToDto(userEntity, jwtUtils.generateToken(accountDetails));
+        return UserMapper.mapToDto(userEntity, jwtUtils.generateAccessToken(accountDetails));
     }
 
     @Override

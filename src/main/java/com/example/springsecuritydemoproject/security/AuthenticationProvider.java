@@ -1,8 +1,10 @@
 package com.example.springsecuritydemoproject.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
@@ -19,7 +21,7 @@ public class AuthenticationProvider {
     private final UserDetailsService userDetailsService;
 
     public Authentication getAuthentication(String username) {
-        UserDetails userDetails1 = userDetailsService.loadUserByUsername(username);
+        userDetailsService.loadUserByUsername(username);
         return Optional.ofNullable(username)
                 .map(userDetailsService::loadUserByUsername)
                 .map(userDetails ->

@@ -3,6 +3,7 @@ package com.example.springsecuritydemoproject.security.jwt;
 import com.example.springsecuritydemoproject.security.AuthenticationProvider;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,14 +16,14 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-public class JwtAuthFilter extends GenericFilter {
+public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final JwtConfig jwtConfig;
     private final AuthenticationProvider authenticationProvider;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         Optional.ofNullable(((HttpServletRequest)request).getHeader(HttpHeaders.AUTHORIZATION)) // get auth header
                 .filter(authHeader -> authHeader.startsWith(jwtConfig.getTokenPrefix())) // search for bearer token
                 .map(authHeader -> authHeader.substring(jwtConfig.getTokenPrefix().length())) // remove token prefix

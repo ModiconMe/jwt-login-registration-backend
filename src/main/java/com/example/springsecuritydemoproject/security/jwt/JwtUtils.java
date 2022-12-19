@@ -3,22 +3,16 @@ package com.example.springsecuritydemoproject.security.jwt;
 import com.example.springsecuritydemoproject.security.AuthenticationProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Component
@@ -33,12 +27,22 @@ public class JwtUtils {
      * @param userDetails user credentials (login, password, authorities etc...)
      * @return jwt token as string
      */
-    public String generateToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         return Jwts.builder().setClaims(claims)
                 .setSubject(userDetails.getUsername())
                 .setIssuer(jwtConfig.getIssuer())
                 .claim("authorities", userDetails.getAuthorities())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(jwtConfig.getIssueAt())
+                .signWith(jwtConfig.getKey()).compact();
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        return Jwts.builder().setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuer(jwtConfig.getIssuer())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(jwtConfig.getIssueAt())
                 .signWith(jwtConfig.getKey()).compact();
