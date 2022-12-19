@@ -20,7 +20,6 @@ public class JwtUtils {
 
     private final UserDetailsService userDetailsService;
     private final JwtConfig jwtConfig;
-    private final AuthenticationProvider authenticationProvider;
 
     /**
      * Generate jwt token after authentication

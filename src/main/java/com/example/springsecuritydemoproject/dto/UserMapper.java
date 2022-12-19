@@ -6,12 +6,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserMapper {
 
-    public static UserDto mapToDto(UserEntity userEntity, String token) {
+    public static UserDto mapToDto(UserEntity userEntity, String accessToken, String refreshToken) {
 
         return UserDto.builder()
                 .email(userEntity.getEmail())
                 .username(userEntity.getUsername())
-                .token(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .bio(userEntity.getBio())
                 .image(userEntity.getImage())
                 .createdAt(userEntity.getCreatedAt())

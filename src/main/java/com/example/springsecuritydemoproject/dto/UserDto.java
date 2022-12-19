@@ -18,7 +18,8 @@ public class UserDto {
 
     private String username;
     private String email;
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private String bio;
     private String image;
     private ZonedDateTime createdAt;

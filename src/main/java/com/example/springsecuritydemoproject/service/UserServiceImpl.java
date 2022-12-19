@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
                         .role(USER)
                         .build());
 
-        return UserMapper.mapToDto(userEntity, "");
+        return UserMapper.mapToDto(userEntity, "", "");
     }
 
     @Override
@@ -66,13 +66,13 @@ public class UserServiceImpl implements UserService {
                 .authorities(userEntity.getRole().getGrantedAuthorities())
                 .build();
 
-        return UserMapper.mapToDto(userEntity, jwtUtils.generateAccessToken(accountDetails));
+        return UserMapper.mapToDto(userEntity, jwtUtils.generateAccessToken(accountDetails), jwtUtils.generateRefreshToken(accountDetails));
     }
 
     @Override
     public List<UserDto> getUsers() {
         return userRepository.findAll().stream()
-                .map(u -> UserMapper.mapToDto(u, ""))
+                .map(u -> UserMapper.mapToDto(u, "", ""))
                 .toList();
     }
 

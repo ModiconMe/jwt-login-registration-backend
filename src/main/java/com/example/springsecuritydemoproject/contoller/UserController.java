@@ -3,7 +3,9 @@ package com.example.springsecuritydemoproject.contoller;
 import com.example.springsecuritydemoproject.dto.UserDto;
 import com.example.springsecuritydemoproject.dto.UserLoginRequest;
 import com.example.springsecuritydemoproject.dto.UserRegisterRequest;
+import com.example.springsecuritydemoproject.security.jwt.JwtTokenService;
 import com.example.springsecuritydemoproject.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +19,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService accountService;
+    private final JwtTokenService jwtTokenService;
 
     @PostMapping
     public UserDto registry(@RequestBody @Valid UserRegisterRequest request) {
@@ -38,6 +41,11 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public String onlyAdmin() {
         return "Admin";
+    }
+
+    @GetMapping("/refresh")
+    public String updateAccessToken(HttpServletRequest request) {
+        return jwtTokenService.updateAccessToken(request);
     }
 
 }
