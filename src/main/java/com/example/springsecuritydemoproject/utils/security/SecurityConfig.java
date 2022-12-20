@@ -31,16 +31,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf().disable()
-                .exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) // return Unauthorized http status
-                .and()
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // use jwt filter
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/refresh").permitAll()
-//                .requestMatchers(HttpMethod.GET, "/api/users/admin").hasAnyAuthority(USER.name())
-//                .requestMatchers(HttpMethod.GET, "/api/users").hasRole(USER.name())
+                .requestMatchers(HttpMethod.GET, "/api/users/confirm").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .build();

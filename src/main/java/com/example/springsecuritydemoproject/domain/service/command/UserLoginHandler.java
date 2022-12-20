@@ -20,19 +20,29 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserLoginHandler implements CommandHandler<UserLoginResult, UserLogin> {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
     @Override
     public UserLoginResult handle(UserLogin command) {
-        UserEntity user = userRepository.findByEmail(command.getEmail())
+        UserEntity user = userRepo.findByEmail(command.getEmail())
                 .orElseThrow(() -> ApiException.build(HttpStatus.NOT_FOUND,
                         "user with email \"%s\" is not found", command.getEmail()));
 
         if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
             log.error("user with password {} is not found", command.getPassword());
             ApiException.build(HttpStatus.NOT_FOUND, "user with password \"%s\" is not found", command.getPassword());
+        }
+
+        if (!user.isEnabled()) {
+            log.error("user with email {} is non activated", command.getEmail());
+            ApiException.build(HttpStatus.NOT_FOUND, "user with email \"%s\" is non activated", command.getEmail());
+        }
+
+        if (user.isLocked()) {
+            log.error("user with email {} is banned", command.getEmail());
+            ApiException.build(HttpStatus.NOT_FOUND, "user with email \"%s\" is banned", command.getEmail());
         }
 
         AppUserDetails userDetails = AppUserDetails.builder()

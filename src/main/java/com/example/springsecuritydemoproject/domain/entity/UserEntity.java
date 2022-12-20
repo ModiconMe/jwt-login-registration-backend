@@ -56,4 +56,9 @@ public class UserEntity {
     @Enumerated(value = EnumType.STRING)
     private ApplicationUserRole role;
 
+    @Column(name = "locked", nullable = false)
+    private boolean locked;
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled;
+
 }

@@ -1,6 +1,7 @@
 package com.example.springsecuritydemoproject.domain.repository;
 
 import com.example.springsecuritydemoproject.domain.entity.UserEntity;
+import com.example.springsecuritydemoproject.utils.security.roles.ApplicationUserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +21,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "WHERE " +
             "(:username = NULL OR u.username = :username) AND " +
             "(:role = NULL OR u.role = :role)")
-    List<UserEntity> findByFilter(@Param("username") String username, @Param("role") String role);
+    List<UserEntity> findByFilter(@Param("username") String username, @Param("role") ApplicationUserRole role);
 
 }

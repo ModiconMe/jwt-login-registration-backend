@@ -1,11 +1,13 @@
 package com.example.springsecuritydemoproject.domain.service.command;
 
+import com.example.springsecuritydemoproject.domain.entity.ConfirmationToken;
 import com.example.springsecuritydemoproject.domain.entity.UserEntity;
+import com.example.springsecuritydemoproject.domain.repository.ConfirmationTokenRepository;
 import com.example.springsecuritydemoproject.domain.repository.UserRepository;
-import com.example.springsecuritydemoproject.utils.cqrs.Command;
+import com.example.springsecuritydemoproject.domain.service.EmailSender;
+import com.example.springsecuritydemoproject.domain.service.EmailTextBuilder;
 import com.example.springsecuritydemoproject.utils.cqrs.CommandHandler;
 import com.example.springsecuritydemoproject.utils.exception.ApiException;
-import com.example.springsecuritydemoproject.utils.security.jwt.JwtUtils;
 import com.example.springsecuritydemoproject.web.dto.UserMapper;
 import com.example.springsecuritydemoproject.web.dto.command.UserRegister;
 import com.example.springsecuritydemoproject.web.dto.command.UserRegisterResult;
@@ -14,8 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.example.springsecuritydemoproject.utils.security.roles.ApplicationUserRole.USER;
 
@@ -24,22 +30,38 @@ import static com.example.springsecuritydemoproject.utils.security.roles.Applica
 @Service
 public class UserRegisterHandler implements CommandHandler<UserRegisterResult, UserRegister> {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepo;
+    private final ConfirmationTokenRepository tokenRepo;
     private final PasswordEncoder passwordEncoder;
+    private final EmailSender emailSender;
+    private final EmailTextBuilder emailTextBuilder;
 
     @Override
+    @Transactional
     public UserRegisterResult handle(UserRegister command) {
-        if (userRepository.findByEmail(command.getEmail()).isPresent()) {
+        // check that user is not exist by email and, if exists, check activated
+        Optional<UserEntity> byEmail = userRepo.findByEmail(command.getEmail());
+        if (byEmail.isPresent()) {
+            if (!byEmail.get().isEnabled()) {
+                log.error("user with email {} is not activated", command.getEmail());
+                ApiException.build(HttpStatus.BAD_REQUEST, "user with email \"%s\" is not activated", command.getEmail());
+            }
             log.error("user with email {} is already exists", command.getEmail());
             ApiException.build(HttpStatus.BAD_REQUEST, "user with email \"%s\" is already exists", command.getEmail());
         }
 
-        if (userRepository.findByUsername(command.getUsername()).isPresent()) {
+        // check that user is not exist by username and, if exists, check activated
+        Optional<UserEntity> byUsername = userRepo.findByUsername(command.getUsername());
+        if (byUsername.isPresent()) {
+            if (!byUsername.get().isEnabled()) {
+                log.error("user with username {} is not activated", command.getUsername());
+                ApiException.build(HttpStatus.BAD_REQUEST, "user with username \"%s\" is not activated", command.getEmail());
+            }
             log.error("user with username {} is already exists", command.getUsername());
             ApiException.build(HttpStatus.BAD_REQUEST, "user with username \"%s\" is already exists", command.getUsername());
         }
 
-        UserEntity userEntity = userRepository.saveAndFlush(
+        UserEntity user = userRepo.saveAndFlush(
                 UserEntity.builder()
                         .email(command.getEmail())
                         .username(command.getUsername())
@@ -48,11 +70,23 @@ public class UserRegisterHandler implements CommandHandler<UserRegisterResult, U
                         .updatedAt(ZonedDateTime.now())
                         .role(USER)
                         .build());
-        log.info("user {} is register", userEntity);
 
-        // TODO: CHECK IF USER IS ALREADY EXIST AND NOT ENABLED THEN THROW ACCOUNT NOT ENABLE EXCEPTION
-        // TODO: SEND EMAIL
+        ConfirmationToken confirmationToken = tokenRepo.saveAndFlush(ConfirmationToken.builder()
+                .userEntity(user)
+                .token(UUID.randomUUID().toString())
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .build());
 
-        return new UserRegisterResult(UserMapper.mapToDto(userEntity));
+        log.info("user {} is register", user);
+
+        String link = "http://localhost:8080/api/users/confirm?token=" + confirmationToken.getToken();
+        emailSender.send(
+                user.getEmail(),
+                emailTextBuilder.buildEmail(user.getUsername(), link)
+        );
+        log.info("token {} is created and send", confirmationToken.getToken());
+
+        return new UserRegisterResult(UserMapper.mapToDto(user));
     }
 }

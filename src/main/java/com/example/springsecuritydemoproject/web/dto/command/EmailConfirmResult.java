@@ -1,17 +1,15 @@
-package com.example.springsecuritydemoproject.web.dto.query;
+package com.example.springsecuritydemoproject.web.dto.command;
 
 import com.example.springsecuritydemoproject.web.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class GetUsersResult {
+public class EmailConfirmResult {
 
-    private List<UserDto> users;
+    private UserDto user;
 
 }

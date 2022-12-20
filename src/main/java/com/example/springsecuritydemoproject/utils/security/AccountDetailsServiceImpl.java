@@ -16,12 +16,14 @@ public class AccountDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByEmail(username)
-                .map(account ->
+                .map(user ->
                         AppUserDetails.builder()
-                                .id(account.getId())
-                                .email(account.getEmail())
-                                .password(account.getPassword())
-                                .authorities(account.getRole().getGrantedAuthorities())
+                                .id(user.getId())
+                                .email(user.getEmail())
+                                .password(user.getPassword())
+                                .authorities(user.getRole().getGrantedAuthorities())
+                                .enabled(user.isEnabled())
+                                .locked(user.isLocked())
                                 .build())
                 .orElse(null);
     }
